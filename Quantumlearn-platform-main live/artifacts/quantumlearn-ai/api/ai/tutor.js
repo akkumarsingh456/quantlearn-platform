@@ -1,34 +1,42 @@
-function tutorSystemPrompt() {
-  return 'You are QuantumLearn AI, a careful quantum-computing tutor. Explain concepts clearly for the learner level. Use the supplied simulator context and never invent state-vector or probability values. Return only JSON with answer, optional hint, nextStep, qiskitCode, quizQuestion, and sources as a string array.';
+function sendJson(response, status, body) {
+  response.statusCode = status;
+  response.setHeader('Content-Type', 'application/json');
+  response.end(JSON.stringify(body));
 }
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed.' });
-  const body = req.body;
-  if (!body || typeof body.question !== 'string' || typeof body.mode !== 'string') {
-    return res.status(400).json({ error: 'Invalid tutor request.' });
+export default async function handler(request, response) {
+  if (request.method !== 'POST') {
+    response.setHeader('Allow', 'POST');
+    return sendJson(response, 405, { error: 'Method not allowed.' });
   }
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) return res.status(503).json({ error: 'AI Tutor is not configured.' });
 
   try {
-    const upstream = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`, {
+    const body = typeof request.body === 'string' ? JSON.parse(request.body) : request.body;
+    const question = typeof body?.question === 'string' ? body.question.trim() : '';
+    if (!question) return sendJson(response, 400, { error: 'A tutor question is required.' });
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return sendJson(response, 503, { error: 'AI Tutor is not configured.' });
+
+    const providerResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: tutorSystemPrompt() }] },
-        contents: [{ role: 'user', parts: [{ text: JSON.stringify(body) }] }],
+        systemInstruction: { parts: [{ text: 'You are QuantumLearn Tutor. Answer quantum-computing questions accurately and clearly for the learner. Explain concepts step by step, connect answers to the supplied circuit context, and return only valid JSON with keys answer, hint, nextStep, qiskitCode, quizQuestion, sources.' }] },
+        contents: [{ role: 'user', parts: [{ text: JSON.stringify({ question, mode: body?.mode, context: body?.context }) }] }],
         generationConfig: { temperature: 0.2, responseMimeType: 'application/json' },
       }),
     });
-    const payload = await upstream.json();
-    if (!upstream.ok) return res.status(502).json({ error: payload?.error?.message || 'Gemini request failed.' });
+
+    if (!providerResponse.ok) return sendJson(response, 502, { error: 'AI Tutor provider request failed.' });
+    const payload = await providerResponse.json();
     const text = payload?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('').trim();
-    if (!text) return res.status(502).json({ error: 'Gemini returned no tutor answer.' });
-    const answer = JSON.parse(text);
-    if (typeof answer.answer !== 'string') return res.status(502).json({ error: 'Gemini returned an invalid tutor answer.' });
-    return res.status(200).json({ ...answer, sources: Array.isArray(answer.sources) ? answer.sources : [] });
+    if (!text) return sendJson(response, 502, { error: 'AI Tutor provider returned no response.' });
+
+    const result = JSON.parse(text);
+    if (typeof result.answer !== 'string' || !result.answer.trim()) return sendJson(response, 502, { error: 'AI Tutor provider returned an invalid response.' });
+    return sendJson(response, 200, { answer: result.answer, hint: result.hint, nextStep: result.nextStep, qiskitCode: result.qiskitCode, quizQuestion: result.quizQuestion, sources: Array.isArray(result.sources) ? result.sources : [] });
   } catch {
-    return res.status(502).json({ error: 'AI Tutor is temporarily unavailable. Retry the request.' });
+    return sendJson(response, 500, { error: 'AI Tutor could not process the request.' });
   }
 }
