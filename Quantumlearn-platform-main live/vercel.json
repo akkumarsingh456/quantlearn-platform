@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "pnpm install --frozen-lockfile",
   "services": {
     "api-server": {
       "root": "Quantumlearn-platform-main live/artifacts/api-server",
