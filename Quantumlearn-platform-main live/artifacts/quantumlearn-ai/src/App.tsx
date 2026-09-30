@@ -2443,7 +2443,7 @@ function answerQuantumQuestion(question: string, mode: string = 'explain') {
   return 'I can help with quantum learning questions about qubits, superposition, amplitudes, phase, measurement, H/X/Y/Z/S/T gates, controlled gates, entanglement, interference, Grover, circuits, Python, and Qiskit. What topic should we unpack?';
 }
 
-async function askTutor(question: string, mode: TutorMode, learner: Learner) {
+async function askTutor(question: string, mode: TutorMode, learner: Learner, getToken: () => Promise<string | null>) {
   const latest = JSON.parse(localStorage.getItem('ql-latest-circuit') || 'null') as {
     circuit?: Gate[];
     qubitCount?: number;
@@ -2451,9 +2451,10 @@ async function askTutor(question: string, mode: TutorMode, learner: Learner) {
     probabilities?: number[];
     measurementResults?: Record<string, number>;
   } | null;
+  const token = await getToken();
   const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/ai/tutor`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: JSON.stringify({
       question,
       mode,
@@ -2482,6 +2483,7 @@ async function askTutor(question: string, mode: TutorMode, learner: Learner) {
 }
 
 function AiTutor({ learner }: { learner: Learner }) {
+  const { getToken } = useAuth();
   const levelLabel = learner.learningLevel === 'beginner' ? 'beginner' : learner.learningLevel === 'intermediate' ? 'intermediate' : 'new learner';
   const [messages, setMessages] = useState<TutorMessage[]>([{ from: 'tutor', text: `Welcome back${learner.name ? `, ${learner.name.split(' ')[0]}` : ''}. I am tuned for a ${levelLabel}. Pick a mode or ask me about the idea you are working on.` }]);
   const [input, setInput] = useState('');
@@ -2489,7 +2491,7 @@ function AiTutor({ learner }: { learner: Learner }) {
   const [thinking, setThinking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastQuestion, setLastQuestion] = useState('');
-  const send = async (prompt = input.trim()) => { const question = prompt.trim(); if (!question || thinking) return; setMessages((current) => [...current, { from: 'you', text: question, mode }]); setInput(''); setThinking(true); setError(null); setLastQuestion(question); recordActivity({ resourceType: 'tutor', title: `AI Tutor: ${tutorModes.find((m) => m.id === mode)?.label || mode}`, href: '/ai-tutor', status: 'completed', actionType: 'TUTOR_QUERY', description: `Asked AI Tutor: "${question.slice(0, 90)}${question.length > 90 ? '...' : ''}" in ${mode} mode.`, details: { tutorMode: mode, tutorPrompt: question } }); try { const answer = await askTutor(question, mode, learner); setMessages((current) => [...current, { from: 'tutor', text: answer, mode }]); } catch (requestError) { const message = requestError instanceof Error ? requestError.message : 'AI Tutor is temporarily unavailable.'; setError(message); setMessages((current) => [...current, { from: 'tutor', text: message, mode }]); } finally { setThinking(false); } };
+  const send = async (prompt = input.trim()) => { const question = prompt.trim(); if (!question || thinking) return; setMessages((current) => [...current, { from: 'you', text: question, mode }]); setInput(''); setThinking(true); setError(null); setLastQuestion(question); recordActivity({ resourceType: 'tutor', title: `AI Tutor: ${tutorModes.find((m) => m.id === mode)?.label || mode}`, href: '/ai-tutor', status: 'completed', actionType: 'TUTOR_QUERY', description: `Asked AI Tutor: "${question.slice(0, 90)}${question.length > 90 ? '...' : ''}" in ${mode} mode.`, details: { tutorMode: mode, tutorPrompt: question } }); try { const answer = await askTutor(question, mode, learner, getToken); setMessages((current) => [...current, { from: 'tutor', text: answer, mode }]); } catch (requestError) { const message = requestError instanceof Error ? requestError.message : 'AI Tutor is temporarily unavailable.'; setError(message); setMessages((current) => [...current, { from: 'tutor', text: message, mode }]); } finally { setThinking(false); } };
   const retry = () => { if (lastQuestion) void send(lastQuestion); };
   const clear = () => { setMessages([{ from: 'tutor', text: 'Fresh page. What quantum idea should we make visible?' }]); setInput(''); };
   const setTutorMode = (nextMode: TutorMode) => { setMode(nextMode); setInput(`${tutorModes.find((item) => item.id === nextMode)?.prompt || ''} `); };
