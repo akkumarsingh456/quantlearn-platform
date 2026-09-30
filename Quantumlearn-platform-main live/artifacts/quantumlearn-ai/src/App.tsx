@@ -130,13 +130,13 @@ function CelebrationOverlay() {
 
 const queryClient = new QueryClient();
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
-const rawClerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const rawClerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || import.meta.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 const hasClerkKey = Boolean(rawClerkPubKey);
 const isLocalhost = ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname);
 const clerkPubKey = isLocalhost
   ? rawClerkPubKey
   : publishableKeyFromHost(window.location.hostname, rawClerkPubKey);
-const clerkProxyUrl = isLocalhost ? undefined : import.meta.env.VITE_CLERK_PROXY_URL;
+const clerkProxyUrl = isLocalhost ? undefined : (import.meta.env.VITE_CLERK_PROXY_URL || import.meta.env.NEXT_PUBLIC_CLERK_PROXY_URL);
 const clerkAppearance = {
   theme: shadcn,
   cssLayerName: 'clerk',
