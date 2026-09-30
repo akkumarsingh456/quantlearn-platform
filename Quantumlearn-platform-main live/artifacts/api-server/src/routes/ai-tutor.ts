@@ -27,7 +27,7 @@ router.post('/tutor', async (req, res) => {
   }
 
   try {
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY_2;
     if (!apiKey) {
       res.status(503).json({ error: 'AI Tutor is not configured.' });
       return;
