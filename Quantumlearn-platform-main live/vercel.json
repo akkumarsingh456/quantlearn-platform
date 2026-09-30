@@ -19,7 +19,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": { "service": "quantumlearn-ai" }
+      "destination": { "service": "api-server" }
     },
     {
       "source": "/(.*)",
