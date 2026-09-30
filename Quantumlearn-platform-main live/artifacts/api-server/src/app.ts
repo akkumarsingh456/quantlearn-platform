@@ -5,6 +5,7 @@ import pinoHttpModule from "pino-http";
 import { clerkMiddleware } from "@clerk/express";
 import { publishableKeyFromHost } from "@clerk/shared/keys";
 import router from "./routes";
+import aiTutorRouter from "./routes/ai-tutor";
 import { logger } from "./lib/logger";
 import {
   CLERK_PROXY_PATH,
@@ -58,6 +59,7 @@ app.use(
 );
 
 app.use("/api", router);
+app.use("/ai", aiTutorRouter);
 
 app.use((error: unknown, req: IncomingMessage, res: ServerResponse, _next: unknown) => {
   if (res.headersSent) return;
