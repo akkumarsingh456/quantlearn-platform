@@ -1,20 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "pnpm install --frozen-lockfile",
-  "services": {
-    "quantumlearn-ai": {
-      "root": "artifacts/quantumlearn-ai",
-      "framework": "vite"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": { "service": "quantumlearn-ai" }
-    },
-    {
-      "source": "/(.*)",
-      "destination": { "service": "quantumlearn-ai" }
-    }
-  ]
+  "buildCommand": "pnpm --filter @workspace/quantumlearn-ai build",
+  "outputDirectory": "artifacts/quantumlearn-ai/dist/public"
 }
