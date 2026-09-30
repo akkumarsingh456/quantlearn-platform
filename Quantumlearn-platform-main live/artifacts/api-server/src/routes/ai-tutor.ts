@@ -27,31 +27,42 @@ router.post('/tutor', async (req, res) => {
   }
 
   try {
-    const apiKey = process.env.OPENAI_API_KEY_2;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       res.status(503).json({ error: 'AI Tutor is not configured.' });
       return;
     }
 
-    const providerResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    const providerResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        temperature: 0.2,
-        response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: systemPrompt() },
-          { role: 'user', content: JSON.stringify(parsed.data) },
-        ],
+        systemInstruction: { parts: [{ text: systemPrompt() }] },
+        contents: [{ role: 'user', parts: [{ text: JSON.stringify(parsed.data) }] }],
+        generationConfig: {
+          temperature: 0.2,
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              answer: { type: 'STRING' },
+              hint: { type: 'STRING', nullable: true },
+              nextStep: { type: 'STRING', nullable: true },
+              qiskitCode: { type: 'STRING', nullable: true },
+              quizQuestion: { type: 'STRING', nullable: true },
+              sources: { type: 'ARRAY', items: { type: 'STRING' } },
+            },
+            required: ['answer', 'sources'],
+          },
+        },
       }),
     });
     if (!providerResponse.ok) {
       res.status(502).json({ error: 'AI Tutor provider request failed.' });
       return;
     }
-    const payload = await providerResponse.json() as { choices?: Array<{ message?: { content?: string } }> };
-    const content = payload.choices?.[0]?.message?.content;
+    const payload = await providerResponse.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+    const content = payload.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('').trim();
     if (!content) {
       res.status(502).json({ error: 'AI Tutor provider returned no response.' });
       return;
