@@ -1,11 +1,8 @@
 import { Router, type IRouter, type Request } from 'express';
-import { generateObject, gateway } from 'ai';
 import { tutorRequestSchema, tutorResponseSchema } from '@workspace/api-zod';
 
 const router: IRouter = Router();
 type ClerkRequest = Request & { auth?: () => { userId?: string | null } };
-
-const tutorModel = gateway('openai/gpt-5-mini');
 
 function systemPrompt() {
   return [
@@ -30,14 +27,41 @@ router.post('/tutor', async (req, res) => {
   }
 
   try {
-    const result = await generateObject({
-      model: tutorModel,
-      schema: tutorResponseSchema,
-      system: systemPrompt(),
-      prompt: JSON.stringify(parsed.data),
-      temperature: 0.2,
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      res.status(503).json({ error: 'AI Tutor is not configured.' });
+      return;
+    }
+
+    const providerResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        temperature: 0.2,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: systemPrompt() },
+          { role: 'user', content: JSON.stringify(parsed.data) },
+        ],
+      }),
     });
-    res.json(result.object);
+    if (!providerResponse.ok) {
+      res.status(502).json({ error: 'AI Tutor provider request failed.' });
+      return;
+    }
+    const payload = await providerResponse.json() as { choices?: Array<{ message?: { content?: string } }> };
+    const content = payload.choices?.[0]?.message?.content;
+    if (!content) {
+      res.status(502).json({ error: 'AI Tutor provider returned no response.' });
+      return;
+    }
+    const response = tutorResponseSchema.safeParse(JSON.parse(content));
+    if (!response.success) {
+      res.status(502).json({ error: 'AI Tutor provider returned an invalid response.' });
+      return;
+    }
+    res.json(response.data);
   } catch {
     res.status(502).json({ error: 'AI Tutor is temporarily unavailable. Retry the request.' });
   }
