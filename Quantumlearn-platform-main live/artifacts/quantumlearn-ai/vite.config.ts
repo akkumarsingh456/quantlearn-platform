@@ -14,8 +14,18 @@ if (Number.isNaN(port) || port <= 0) {
 
 const basePath = process.env.BASE_PATH || '/';
 
+const clerkPublicEnv = {
+  'import.meta.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY': JSON.stringify(
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || '',
+  ),
+  'import.meta.env.NEXT_PUBLIC_CLERK_PROXY_URL': JSON.stringify(
+    process.env.NEXT_PUBLIC_CLERK_PROXY_URL || '',
+  ),
+};
+
 export default defineConfig({
   base: basePath,
+  define: clerkPublicEnv,
   plugins: [
     react(),
     tailwindcss({ optimize: false }),
