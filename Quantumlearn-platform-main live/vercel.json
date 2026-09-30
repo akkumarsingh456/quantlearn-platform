@@ -4,7 +4,8 @@
   "services": {
     "api-server": {
       "root": "Quantumlearn-platform-main live/artifacts/api-server",
-      "framework": "express"
+      "framework": "express",
+      "entrypoint": "src/index.ts"
     },
     "mockup-sandbox": {
       "root": "Quantumlearn-platform-main live/artifacts/mockup-sandbox",
