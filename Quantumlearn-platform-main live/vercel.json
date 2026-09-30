@@ -3,7 +3,7 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "services": {
     "api-server": {
-      "root": "artifacts/api-server",
+      "root": "Quantumlearn-platform-main live/artifacts/api-server",
       "framework": "express",
       "entrypoint": "src/index.ts"
     },
