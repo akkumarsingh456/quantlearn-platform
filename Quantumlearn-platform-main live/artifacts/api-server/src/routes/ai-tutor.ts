@@ -1,11 +1,11 @@
-import { Router, type IRouter } from 'express';
+import { Router, type IRouter, type Request } from 'express';
+import { generateObject, gateway } from 'ai';
 import { tutorRequestSchema, tutorResponseSchema } from '@workspace/api-zod';
 
 const router: IRouter = Router();
+type ClerkRequest = Request & { auth?: () => { userId?: string | null } };
 
-const providerUrl = process.env.AI_PROVIDER_URL;
-const providerKey = process.env.AI_PROVIDER_API_KEY;
-const providerModel = process.env.AI_PROVIDER_MODEL || 'gpt-4o-mini';
+const tutorModel = gateway('openai/gpt-5-mini');
 
 function systemPrompt() {
   return [
@@ -23,49 +23,21 @@ router.post('/tutor', async (req, res) => {
     res.status(400).json({ error: 'Invalid tutor request.', issues: parsed.error.flatten() });
     return;
   }
-  if (!providerUrl || !providerKey) {
-    res.status(503).json({ error: 'AI Tutor is not configured. Set AI_PROVIDER_URL and AI_PROVIDER_API_KEY on the API server.' });
+  const userId = (req as ClerkRequest).auth?.().userId || null;
+  if (!userId) {
+    res.status(401).json({ error: 'Authentication required.' });
     return;
   }
 
   try {
-    const providerResponse = await fetch(providerUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${providerKey}` },
-      body: JSON.stringify({
-        model: providerModel,
-        temperature: 0.2,
-        response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: systemPrompt() },
-          { role: 'user', content: JSON.stringify(parsed.data) },
-        ],
-      }),
+    const result = await generateObject({
+      model: tutorModel,
+      schema: tutorResponseSchema,
+      system: systemPrompt(),
+      prompt: JSON.stringify(parsed.data),
+      temperature: 0.2,
     });
-    if (!providerResponse.ok) {
-      const providerBody = await providerResponse.text();
-      let providerMessage = `AI provider returned HTTP ${providerResponse.status}.`;
-      try {
-        const parsedProviderBody = JSON.parse(providerBody) as { error?: { message?: string } };
-        if (parsedProviderBody.error?.message) providerMessage = parsedProviderBody.error.message;
-      } catch {
-        // Keep the status-only message when the provider does not return JSON.
-      }
-      res.status(502).json({ error: `AI provider request failed: ${providerMessage}` });
-      return;
-    }
-    const payload = await providerResponse.json() as { choices?: Array<{ message?: { content?: string } }> };
-    const content = payload.choices?.[0]?.message?.content;
-    if (!content) {
-      res.status(502).json({ error: 'AI provider returned no tutor response.' });
-      return;
-    }
-    const response = tutorResponseSchema.safeParse(JSON.parse(content));
-    if (!response.success) {
-      res.status(502).json({ error: 'AI provider returned an invalid tutor response.' });
-      return;
-    }
-    res.json(response.data);
+    res.json(result.object);
   } catch {
     res.status(502).json({ error: 'AI Tutor is temporarily unavailable. Retry the request.' });
   }
