@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd ../.. && pnpm run typecheck:libs && cd artifacts/api-server && node ./build.mjs",
+  "installCommand": "cd ../.. && pnpm install",
+  "outputDirectory": "dist"
+}

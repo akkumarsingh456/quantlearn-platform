@@ -1,0 +1,77 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+    /ai/tutor:
+      post:
+        operationId: tutor
+        tags: [ai]
+        summary: Ask the context-aware AI tutor
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TutorRequest"
+        responses:
+          "200":
+            description: Structured tutor response
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/TutorResponse"
+          "400":
+            description: Invalid tutor request
+          "503":
+            description: AI provider is not configured
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    TutorRequest:
+      type: object
+      required: [question, mode, context]
+      properties:
+        question: { type: string }
+        mode: { type: string }
+        context: { type: object, additionalProperties: true }
+    TutorResponse:
+      type: object
+      required: [answer, sources]
+      properties:
+        answer: { type: string }
+        hint: { type: string }
+        nextStep: { type: string }
+        qiskitCode: { type: string }
+        quizQuestion: { type: string }
+        sources:
+          type: array
+          items: { type: string }
+

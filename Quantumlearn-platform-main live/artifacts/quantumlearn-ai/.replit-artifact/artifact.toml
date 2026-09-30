@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "QuantumLearn AI"
+description = "An interactive quantum computing learning laboratory where beginners learn concepts, build circuits, run simulations, and get guided explanations."
+version = "1.0.0"
+id = "artifacts/quantumlearn-ai"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23908
+
+[services.development]
+run = "pnpm --filter @workspace/quantumlearn-ai run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/quantumlearn-ai", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/quantumlearn-ai/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23908"
+BASE_PATH = "/"

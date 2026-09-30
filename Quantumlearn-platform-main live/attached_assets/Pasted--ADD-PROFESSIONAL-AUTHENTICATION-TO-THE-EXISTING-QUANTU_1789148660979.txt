@@ -1,0 +1,800 @@
+# ADD PROFESSIONAL AUTHENTICATION TO THE EXISTING QUANTUM LEARNING PLATFORM
+
+You are working on my existing AI-powered interactive Quantum Computing Learning Platform.
+
+I want you to add a **professional, secure, beginner-friendly authentication system** to the existing website.
+
+## IMPORTANT
+
+Do NOT rebuild the website from scratch.
+
+Do NOT remove, replace, or break any existing features.
+
+First inspect the existing project structure, frontend, backend, database, routes, components, and current user/progress logic.
+
+Then integrate authentication cleanly into the existing architecture.
+
+The website's main purpose remains:
+
+**Taking a complete beginner from ZERO knowledge of quantum computing to advanced quantum algorithms through step-by-step learning, interactive quantum experiments, simulations, visualization, practice, and AI guidance.**
+
+---
+
+# 1. AUTHENTICATION SYSTEM
+
+Implement:
+
+### Sign Up
+
+Fields:
+
+* Full name
+* Email
+* Password
+* Confirm password
+
+Validation:
+
+* Valid email
+* Required fields
+* Strong enough password
+* Password confirmation must match
+* Clear validation messages
+
+### Login
+
+Fields:
+
+* Email
+* Password
+* Show/hide password
+* Remember session where appropriate
+* Clear error messages
+
+### Logout
+
+Add a proper logout action that securely ends the user's authenticated session.
+
+### Forgot Password
+
+Add a professional password-reset flow.
+
+If the current backend/email infrastructure does not support real password-reset emails yet, implement the architecture cleanly and provide a development-safe placeholder rather than pretending that an email was actually sent.
+
+---
+
+# 2. USER ACCOUNT
+
+After registration, create a user profile.
+
+Store:
+
+* User ID
+* Name
+* Email
+* Role
+* Account creation date
+* Learning level
+* Progress
+* Completed lessons
+* Quiz scores
+* Challenge results
+* Saved circuits
+* Experiment history
+* Achievements
+* Learning streak
+* Concept mastery
+* Last activity
+
+Do NOT store passwords as plain text.
+
+Passwords must be securely hashed using an appropriate password hashing algorithm on the backend.
+
+---
+
+# 3. USER ROLES
+
+Design the authentication architecture to support:
+
+### Student
+
+Default role.
+
+Can:
+
+* Learn
+* Use Quantum Lab
+* Build circuits
+* Run simulations
+* Ask AI Tutor
+* Complete quizzes
+* Complete challenges
+* Save experiments
+* Track progress
+* Earn achievements
+
+### Instructor
+
+Architecture should support:
+
+* Viewing learner progress
+* Managing learning content
+* Viewing assessment results
+* Monitoring learner performance
+
+### Admin
+
+Architecture should support:
+
+* User management
+* Content management
+* Platform management
+
+For the first version, prioritize the STUDENT experience.
+
+Do not create unnecessary complicated dashboards if they are not already present.
+
+---
+
+# 4. AUTHENTICATION PROTECTION
+
+Protect private routes.
+
+Unauthenticated users should not be able to directly access:
+
+* Dashboard
+* Quantum Lab saved data
+* Progress
+* Achievements
+* Saved circuits
+* Personal AI Tutor history
+* Practice history
+* User profile
+
+If an unauthenticated user tries to access a protected page:
+
+Redirect them to the Login page.
+
+After successful login, return them to the page they originally wanted to access when practical.
+
+---
+
+# 5. PUBLIC VS PRIVATE PAGES
+
+Keep educational marketing/content pages public where appropriate.
+
+Example:
+
+PUBLIC:
+
+* Landing page
+* About
+* Platform overview
+* Basic introduction to quantum computing
+* Login
+* Sign Up
+
+AUTHENTICATED:
+
+* Dashboard
+* Learn progress
+* Quantum Lab
+* Saved circuits
+* Practice
+* Challenges
+* Achievements
+* AI Tutor personalized context
+* Profile
+* Settings
+
+Use the existing project structure instead of blindly following this list if the project already has a better routing structure.
+
+---
+
+# 6. BEGINNER-FRIENDLY ONBOARDING
+
+After the user signs up for the first time, show a short onboarding experience.
+
+Example:
+
+### Welcome to QuantumLab
+
+"Let's find your starting point."
+
+Ask:
+
+**How much do you know about quantum computing?**
+
+Options:
+
+🌱 Complete Beginner
+"I don't know anything yet."
+
+🔬 Basic Knowledge
+"I know what qubits and gates are."
+
+⚛️ Intermediate
+"I can build basic quantum circuits."
+
+🧠 Advanced
+"I already understand quantum algorithms."
+
+The user can choose their level.
+
+IMPORTANT:
+
+Do not use this answer to lock the user out of content.
+
+Use it to personalize their recommended starting point.
+
+---
+
+# 7. PERSONALIZED LEARNING PATH
+
+The platform should guide users from:
+
+ZERO
+↓
+Quantum Fundamentals
+↓
+Qubits
+↓
+Superposition
+↓
+Quantum Gates
+↓
+Quantum Circuits
+↓
+Entanglement
+↓
+Interference
+↓
+Quantum Algorithms
+↓
+Grover
+↓
+QFT
+↓
+Shor
+↓
+Advanced Quantum Computing
+
+The user's progress must be connected to their authenticated account.
+
+For example:
+
+User A completes:
+
+* Qubit Basics
+* Superposition
+* H Gate
+
+Those should remain completed after logout and login.
+
+---
+
+# 8. DASHBOARD USER DATA
+
+After login, the dashboard should show the actual logged-in user's information.
+
+Example:
+
+"Welcome back, Parmeshwar"
+
+Then show:
+
+### Continue Learning
+
+The actual lesson the user should continue.
+
+### Progress
+
+Example:
+Quantum Foundations — 42%
+
+### Current Level
+
+Beginner / Intermediate / Advanced
+
+### Recent Experiments
+
+Actual experiments performed by the user.
+
+### Practice Performance
+
+Actual quiz/challenge results.
+
+### Recommended Next Step
+
+Generated from actual progress.
+
+DO NOT use fake/random progress data for authenticated users.
+
+---
+
+# 9. AI TUTOR AUTHENTICATION CONTEXT
+
+The AI Tutor should know the authenticated user's learning context when appropriate.
+
+For example:
+
+Current user:
+
+* Level: Beginner
+* Current lesson: Superposition
+* Completed: Qubits, Classical vs Quantum
+* Quiz score: 80%
+* Recent mistake: Measurement probability
+* Current circuit: H gate on q0
+
+Then if the user asks:
+
+"Why am I getting 50/50?"
+
+The AI should be able to understand the relevant learning context.
+
+IMPORTANT:
+
+Do not send unnecessary private information to the AI model.
+
+Only provide the minimum educational context required.
+
+The AI must never invent simulation results.
+
+---
+
+# 10. SAVED QUANTUM CIRCUITS
+
+Connect saved circuits to the authenticated user.
+
+Example:
+
+User creates:
+
+Bell State Circuit
+
+H → CNOT
+
+They click:
+
+"Save Circuit"
+
+Store it under that user's account.
+
+Later:
+
+Dashboard → My Circuits
+
+They should see their saved circuit.
+
+Allow:
+
+* Open
+* Rename
+* Duplicate
+* Delete
+* Run
+
+---
+
+# 11. EXPERIMENT HISTORY
+
+Store important experiment information for the authenticated user.
+
+Example:
+
+Experiment:
+Bell State
+
+Circuit:
+H + CNOT
+
+Simulation:
+Actual Qiskit/Aer result
+
+Date:
+Actual timestamp
+
+This can later appear in:
+
+**Recent Experiments**
+
+Do not store fake experiment history.
+
+---
+
+# 12. DATABASE DESIGN
+
+Adapt to the existing database if one already exists.
+
+If there is no database, create a clean structure.
+
+At minimum, support tables/models similar to:
+
+### users
+
+* id
+* name
+* email
+* password_hash
+* role
+* learning_level
+* created_at
+* updated_at
+
+### progress
+
+* id
+* user_id
+* lesson_id
+* completion_status
+* score
+* mastery
+* updated_at
+
+### saved_circuits
+
+* id
+* user_id
+* name
+* circuit_data
+* created_at
+* updated_at
+
+### experiments
+
+* id
+* user_id
+* circuit_data
+* simulation_result
+* created_at
+
+### achievements
+
+* id
+* user_id
+* achievement_type
+* unlocked_at
+
+Adapt this to the project's existing database conventions.
+
+Do not duplicate existing tables/models unnecessarily.
+
+---
+
+# 13. API DESIGN
+
+If the project uses FastAPI, create clean authentication endpoints such as:
+
+POST /api/auth/register
+
+POST /api/auth/login
+
+POST /api/auth/logout
+
+GET /api/auth/me
+
+POST /api/auth/forgot-password
+
+POST /api/auth/reset-password
+
+Use the project's existing API conventions if different.
+
+Protect private API endpoints using authentication middleware/dependencies.
+
+For example:
+
+GET /api/progress
+
+POST /api/progress/update
+
+GET /api/circuits
+
+POST /api/circuits
+
+GET /api/experiments
+
+GET /api/achievements
+
+These should return data belonging to the authenticated user.
+
+---
+
+# 14. FRONTEND AUTH STATE
+
+Create a clean authentication state system.
+
+The frontend should know:
+
+* Is the user authenticated?
+* Current user
+* User role
+* Loading state
+* Authentication errors
+
+Avoid duplicating authentication logic across every page.
+
+Use the project's existing state-management approach if one already exists.
+
+---
+
+# 15. UI DESIGN
+
+The authentication pages must match the existing quantum platform design.
+
+Do NOT make them look like a generic template.
+
+Use the existing visual language:
+
+* Clean
+* Professional
+* Modern
+* Quantum-inspired
+* Beginner-friendly
+* Calm
+* High readability
+
+Use subtle quantum visual elements such as:
+
+* Circuit lines
+* Qubit symbols
+* Small state/probability animations
+* Subtle particle motion
+* Quantum grid patterns
+
+Do NOT overload the login page with neon effects or unnecessary 3D graphics.
+
+The authentication page should feel like part of the same product.
+
+---
+
+# 16. PROFILE MENU
+
+Add a user profile menu to the authenticated application.
+
+Example:
+
+[Avatar] Parmeshwar
+
+Dropdown:
+
+* Profile
+* My Progress
+* Achievements
+* Settings
+* AI Tutor
+* Logout
+
+Use the existing sidebar/header if one already exists.
+
+Do not create duplicate navigation systems.
+
+---
+
+# 17. PROFILE PAGE
+
+Create a clean profile page containing:
+
+* Name
+* Email
+* Learning level
+* Joined date
+* Learning progress
+* Achievements
+* Current learning path
+
+Allow users to update appropriate profile information.
+
+Do not allow users to change privileged roles from the normal profile page.
+
+---
+
+# 18. SECURITY
+
+Follow secure authentication practices.
+
+IMPORTANT:
+
+* Never store plaintext passwords.
+* Never expose password hashes to the frontend.
+* Validate all backend inputs.
+* Protect private API routes.
+* Prevent users from accessing another user's data by changing IDs in requests.
+* Do not trust user IDs supplied by the frontend when determining ownership.
+* Use the authenticated user's identity on the backend.
+* Handle expired/invalid authentication correctly.
+* Avoid exposing sensitive authentication errors.
+* Use secure token/session handling appropriate for the application architecture.
+* Configure CORS correctly.
+* Do not hard-code secrets.
+* Use environment variables for secrets/API keys.
+
+Do not put secret API keys in frontend code.
+
+---
+
+# 19. ERROR STATES
+
+Create friendly error messages.
+
+Examples:
+
+Invalid login:
+"Email or password is incorrect."
+
+Existing account:
+"An account with this email already exists."
+
+Weak password:
+"Please choose a stronger password."
+
+Network problem:
+"We couldn't connect right now. Please try again."
+
+Expired session:
+"Your session has expired. Please log in again."
+
+Avoid technical error messages such as raw stack traces in the UI.
+
+---
+
+# 20. LOADING STATES
+
+Add polished loading states for:
+
+* Login
+* Signup
+* Logout
+* Profile loading
+* Dashboard loading
+* Progress loading
+
+Do not let buttons appear frozen.
+
+Example:
+
+"Signing in..."
+
+"Creating account..."
+
+---
+
+# 21. RESPONSIVE DESIGN
+
+Authentication must work properly on:
+
+* Desktop
+* Laptop
+* Tablet
+* Mobile
+
+Maintain the same professional design across screen sizes.
+
+---
+
+# 22. DO NOT BREAK EXISTING QUANTUM FEATURES
+
+This is extremely important.
+
+Before changing anything:
+
+1. Inspect the existing project.
+2. Understand the current architecture.
+3. Identify existing routes.
+4. Identify existing database models.
+5. Identify existing API endpoints.
+6. Identify existing authentication, if any.
+7. Identify existing user/progress logic.
+8. Reuse existing components where possible.
+
+Then implement authentication incrementally.
+
+Do NOT replace working quantum functionality.
+
+The following must continue working:
+
+* Learning modules
+* Quantum Lab
+* Circuit builder
+* Qiskit/Aer simulation
+* Quantum visualizations
+* AI Tutor
+* Algorithms
+* Practice
+* Challenges
+* Progress tracking
+
+---
+
+# 23. TEST THE COMPLETE FLOW
+
+After implementation, test:
+
+### New user
+
+Sign Up
+→ Account created
+→ Onboarding
+→ Dashboard
+→ Learning path
+
+### Existing user
+
+Login
+→ Dashboard
+→ Previous progress restored
+
+### Logout
+
+Logout
+→ Protected pages inaccessible
+→ Login page shown
+
+### Wrong credentials
+
+Login
+→ Proper error
+
+### Saved circuit
+
+Login
+→ Create circuit
+→ Save
+→ Logout
+→ Login again
+→ Circuit still exists
+
+### Progress
+
+Complete lesson
+→ Logout
+→ Login
+→ Lesson remains completed
+
+### Security
+
+User A must never be able to access User B's:
+
+* Progress
+* Circuits
+* Experiments
+* Achievements
+* AI history
+
+---
+
+# 24. FINAL QUALITY REQUIREMENT
+
+Do not just make a login screen.
+
+Authentication must become the foundation for the platform's personalized learning system.
+
+The final experience should feel like:
+
+**Create Account**
+↓
+**Choose Starting Level**
+↓
+**Personalized Quantum Learning Path**
+↓
+**Learn**
+↓
+**Build**
+↓
+**Simulate**
+↓
+**Practice**
+↓
+**Track Progress**
+↓
+**AI Tutor Understands Your Learning**
+↓
+**Unlock Higher Levels**
+
+The ultimate goal is:
+
+**A beginner can start with ZERO quantum knowledge, create an account, receive a personalized learning path, learn step by step, perform real quantum simulations, practice concepts, track their progress, and eventually reach advanced quantum algorithms—all within the same platform.**
+
+Before finishing, verify that the application builds successfully, the backend starts successfully, authentication works end-to-end, and existing features still work.
+
+If you encounter an existing implementation, adapt it rather than replacing it.
